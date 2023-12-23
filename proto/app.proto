@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package app;
+
+option go_package = "github.com/usagm-implementations/china_kpi";
+
+message QueryRequest {
+  string report_start_date= 1; 
+  string report_end_date= 2;
+  }
+  
+  message QueryResponse {
+    string VrsRsid = 1;
+    string author_name = 2;
+    string language = 3;
+    string country_region = 4;
+    string entity = 5;
+    string platform_opr = 6;
+    string status = 7;
+    string account_url = 8;
+    string dimension = 9;
+    string report_name = 10;
+    string item_id = 11;
+    string report_start_date = 12;
+    string report_end_date = 13;
+    string load_time = 14;
+    float audio_play = 15;
+    float video_play_e5 = 16;
+    float visits = 17;
+    float return_visits = 18;
+    float avg_time_spent_on_site_per_visit = 19;
+    float page_views = 20;
+    float article_views = 21;
+  }
+  
+  service ChinaAppService {
+    rpc ExecuteQuery (QueryRequest) returns (QueryResponseList);
+  }
+
+  message QueryResponseList {
+    repeated QueryResponse responses = 1;
+  }
