@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/denisenkom/go-mssqldb v0.12.3
+	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.32.0

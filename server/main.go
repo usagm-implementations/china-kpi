@@ -11,11 +11,9 @@ import (
 
 	// "path/filepath"
 	// "strings"
-
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/gorilla/mux"
 	pb "github.com/usagm-implementations/china-kpi/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	_ "google.golang.org/grpc/grpclog/glogger"
 
 	_ "github.com/denisenkom/go-mssqldb"
@@ -155,23 +153,16 @@ func main() {
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(size), grpc.MaxSendMsgSize(size))
 	pb.RegisterChinaAppServiceServer(s, &appServer{db: db})
 
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))}
-	err = pb.RegisterChinaAppServiceHandlerFromEndpoint(context.Background(), mux, ":7777", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gRPC gateway: %v", err)
-	} else {
-		log.Printf("Registered gRPC gateway")
-	}
+	mux := mux.NewRouter()
 
 	// Serve the React app statically
-	// reactAppDir := "./webapp/build" // Adjust this path based on your React app build location
-	// reactAppPath := "/webapp/"
-	// reactHandler := http.StripPrefix(reactAppPath, http.FileServer(http.Dir(reactAppDir)))
-	// mux.Handle(reactAppPath, reactHandler)
+	reactAppDir := "./webapp/build" // Adjust this path based on your React app build location
+	reactAppPath := "/webapp/"
+	reactHandler := http.StripPrefix(reactAppPath, http.FileServer(http.Dir(reactAppDir)))
+	mux.PathPrefix(reactAppPath).Handler(reactHandler)
 
 	// Register the HTTP handler on the same ServeMux
-	mux.HandlePath("GET", "/api/query", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	mux.HandleFunc("/api/query", func(w http.ResponseWriter, r *http.Request) {
 		startDate := r.URL.Query().Get("startDate")
 		endDate := r.URL.Query().Get("endDate")
 
