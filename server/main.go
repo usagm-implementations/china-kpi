@@ -9,17 +9,12 @@ import (
 	"net"
 	"net/http"
 
-	// _ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
-	// _ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
+	// "path/filepath"
+	// "strings"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	pb "github.com/usagm-implementations/china-kpi/proto"
 	"google.golang.org/grpc"
-
-	// _ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
-
-	// _ "google.golang.org/protobuf/cmd/protoc-gen-go"
-
-	// _ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	"google.golang.org/grpc/credentials"
 	_ "google.golang.org/grpc/grpclog/glogger"
 
@@ -156,7 +151,7 @@ func main() {
 		log.Printf("gRPC Server Listening at %v", lis.Addr())
 	}
 
-	size := 1024 * 1024 * 50
+	size := 1024 * 1024 * 1000
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(size), grpc.MaxSendMsgSize(size))
 	pb.RegisterChinaAppServiceServer(s, &appServer{db: db})
 
@@ -168,6 +163,12 @@ func main() {
 	} else {
 		log.Printf("Registered gRPC gateway")
 	}
+
+	// Serve the React app statically
+	// reactAppDir := "./webapp/build" // Adjust this path based on your React app build location
+	// reactAppPath := "/webapp/"
+	// reactHandler := http.StripPrefix(reactAppPath, http.FileServer(http.Dir(reactAppDir)))
+	// mux.Handle(reactAppPath, reactHandler)
 
 	// Register the HTTP handler on the same ServeMux
 	mux.HandlePath("GET", "/api/query", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
