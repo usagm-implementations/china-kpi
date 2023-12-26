@@ -9,8 +9,7 @@ import (
 	"net"
 	"net/http"
 
-	// "path/filepath"
-	// "strings"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	pb "github.com/usagm-implementations/china-kpi/proto"
 	"google.golang.org/grpc"
@@ -153,7 +152,15 @@ func main() {
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(size), grpc.MaxSendMsgSize(size))
 	pb.RegisterChinaAppServiceServer(s, &appServer{db: db})
 
+	// Create a new CORS-enabled handler
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)
+
 	mux := mux.NewRouter()
+	mux.Use(corsHandler)
 
 	// Serve the React app statically
 	reactAppDir := "./webapp/build" // Adjust this path based on your React app build location
