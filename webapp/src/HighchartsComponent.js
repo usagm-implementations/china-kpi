@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Highcharts from "highcharts";
 
 const HighchartsComponent = () => {
@@ -16,6 +16,9 @@ const HighchartsComponent = () => {
           data: [1, 2, 3, 4, 5],
         },
       ],
+      accessibility: {
+        enabled: false,
+      },
     };
 
     // Render Highcharts chart
