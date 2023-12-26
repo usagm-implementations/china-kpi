@@ -9,11 +9,18 @@ import (
 	"net"
 	"net/http"
 
+	// _ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
+	// _ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	pb "github.com/usagm-implementations/china_kpi/proto"
+	pb "github.com/usagm-implementations/china-kpi/proto"
 	"google.golang.org/grpc"
 
 	// _ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
+
+	// _ "google.golang.org/protobuf/cmd/protoc-gen-go"
+
+	// _ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
+	"google.golang.org/grpc/credentials"
 	_ "google.golang.org/grpc/grpclog/glogger"
 
 	_ "github.com/denisenkom/go-mssqldb"
@@ -21,6 +28,7 @@ import (
 
 type appServer struct {
 	pb.UnimplementedChinaAppServiceServer
+	db *sql.DB
 }
 
 const (
@@ -82,61 +90,28 @@ aar.load_time
 
 func (s *appServer) ExecuteQuery(ctx context.Context, req *pb.QueryRequest) (*pb.QueryResponseList, error) {
 	log.Printf("received: Start Date - %v, End Date - %v", req.GetReportStartDate(), req.GetReportEndDate())
-	// sqlQuery := readSQLQuery()
-	// fmt.Printf(chinaQuery)
-	// Connect to the SQL database
-	connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s", dbserver, user, password, port, database)
-	db, err := sql.Open("mssql", connectionString)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
 
-	err = db.Ping()
+	rows, err := s.db.Query(sqlQuery, req.ReportStartDate, req.ReportEndDate)
 	if err != nil {
-		log.Fatal("Database connection failed", err)
-	} else {
-		fmt.Println("Database connection SUCCESS")
-	}
-
-	// Execute the SQL query
-	rows, err := db.Query(sqlQuery, req.ReportStartDate, req.ReportEndDate)
-	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error executing query: %v", err)
+		return nil, fmt.Errorf("failed to execute query: %v", err)
 	}
 	defer rows.Close()
 
-	// Process the SQL query results
 	var results []*pb.QueryResponse
-
 	for rows.Next() {
 		var result pb.QueryResponse
 		err := rows.Scan(
-			&result.VrsRsid,
-			&result.AuthorName,
-			&result.Language,
-			&result.CountryRegion,
-			&result.Entity,
-			&result.PlatformOpr,
-			&result.Status,
-			&result.AccountUrl,
-			&result.Dimension,
-			&result.ReportName,
-			&result.ItemId,
-			&result.ReportStartDate,
-			&result.ReportEndDate,
-			&result.LoadTime,
-			&result.AudioPlay,
-			&result.VideoPlayE5,
-			&result.Visits,
-			&result.ReturnVisits,
-			&result.AvgTimeSpentOnSitePerVisit,
-			&result.PageViews,
-			&result.ArticleViews,
+			&result.VrsRsid, &result.AuthorName, &result.Language, &result.CountryRegion,
+			&result.Entity, &result.PlatformOpr, &result.Status, &result.AccountUrl,
+			&result.Dimension, &result.ReportName, &result.ItemId, &result.ReportStartDate,
+			&result.ReportEndDate, &result.LoadTime, &result.AudioPlay, &result.VideoPlayE5,
+			&result.Visits, &result.ReturnVisits, &result.AvgTimeSpentOnSitePerVisit,
+			&result.PageViews, &result.ArticleViews,
 		)
 		if err != nil {
-			log.Fatal("Error scanning rows: ", err)
-			return nil, err
+			log.Printf("Error scanning rows: %v", err)
+			return nil, fmt.Errorf("failed to scan rows: %v", err)
 		}
 
 		results = append(results, &result)
@@ -145,26 +120,57 @@ func (s *appServer) ExecuteQuery(ctx context.Context, req *pb.QueryRequest) (*pb
 	return &pb.QueryResponseList{Responses: results}, nil
 }
 
-func main() {
-	lis, err := net.Listen("tcp", ":8080")
+func connectDB() (*sql.DB, error) {
+	connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s", dbserver, user, password, port, database)
+	db, err := sql.Open("mssql", connectionString)
 	if err != nil {
-		log.Fatalf("tcp connection failed: %v", err)
+		return nil, fmt.Errorf("failed to connect to the database: %v", err)
 	}
-	log.Printf("gRPC Server Listening at %v", lis.Addr())
+
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("database connection failed: %v", err)
+	}
+
+	fmt.Println("Database connection successful")
+	return db, nil
+}
+
+func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered from panic:", r)
+		}
+	}()
+
+	db, err := connectDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+	defer db.Close()
+
+	log.Println("Starting gRPC server...")
+	lis, err := net.Listen("tcp", ":7777")
+	if err != nil {
+		log.Fatalf("TCP connection failed: %v", err)
+	} else {
+		log.Printf("gRPC Server Listening at %v", lis.Addr())
+	}
 
 	size := 1024 * 1024 * 50
 	s := grpc.NewServer(grpc.MaxRecvMsgSize(size), grpc.MaxSendMsgSize(size))
-	pb.RegisterChinaAppServiceServer(s, &appServer{})
+	pb.RegisterChinaAppServiceServer(s, &appServer{db: db})
 
 	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = pb.RegisterChinaAppServiceHandlerFromEndpoint(context.Background(), mux, ":8080", opts)
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))}
+	err = pb.RegisterChinaAppServiceHandlerFromEndpoint(context.Background(), mux, ":7777", opts)
 	if err != nil {
 		log.Fatalf("Failed to register gRPC gateway: %v", err)
+	} else {
+		log.Printf("Registered gRPC gateway")
 	}
 
-	// RESTful API endpoint
-	http.HandleFunc("/api/query", func(w http.ResponseWriter, r *http.Request) {
+	// Register the HTTP handler on the same ServeMux
+	mux.HandlePath("GET", "/api/query", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		startDate := r.URL.Query().Get("startDate")
 		endDate := r.URL.Query().Get("endDate")
 
@@ -173,8 +179,9 @@ func main() {
 			ReportEndDate:   endDate,
 		}
 
-		resp, err := (&appServer{}).ExecuteQuery(r.Context(), req)
+		resp, err := (&appServer{db: db}).ExecuteQuery(r.Context(), req)
 		if err != nil {
+			log.Printf("Error executing query: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -184,11 +191,18 @@ func main() {
 	})
 
 	go func() {
-		http.ListenAndServe(":8081", mux)
+		log.Println("Starting HTTP server...")
+		err := http.ListenAndServe(":7778", mux)
+		if err != nil {
+			log.Fatalf("HTTP server failed: %v", err)
+		} else {
+			log.Printf("HTTP server started.")
+		}
 	}()
 
-	log.Printf("gRPC, HTTP, and API server started.")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("gRPC server failed: %v", err)
+	} else {
+		log.Printf("gRPC, HTTP, and API server started.")
 	}
 }
