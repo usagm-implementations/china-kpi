@@ -38,5 +38,9 @@
 }
 
 .react-datepicker-wrapper {
-  width: 17vw !important;
+  width: 100% !important;
+}
+
+#datePicker {
+  width: 100% !important;
 }
