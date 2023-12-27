@@ -1,31 +1,33 @@
-import React, { useState, useEffect } from "react";
+// HighchartsComponent.js
+
+import React, { useEffect } from "react";
 import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 
-const HighchartsComponent = () => {
+const HighchartsComponent = ({ data }) => {
+  console.log(data);
   useEffect(() => {
-    // Sample Highcharts configuration
-    const options = {
-      chart: {
-        type: "bar",
-      },
-      title: {
-        text: "Highcharts Example",
-      },
-      series: [
-        {
-          data: [1, 2, 3, 4, 5],
+    if (data.length > 0) {
+      // Use the filtered data to create Highcharts configuration
+      const chartConfig = {
+        // Your Highcharts configuration options here
+        title: {
+          text: "Filtered Data Chart",
         },
-      ],
-      accessibility: {
-        enabled: false,
-      },
-    };
+        series: [
+          {
+            name: "Sample Series",
+            data: data.map((item) => item.article_views),
+          },
+        ],
+      };
 
-    // Render Highcharts chart
-    Highcharts.chart("highcharts-container", options);
-  }, []);
+      // Create Highcharts chart
+      Highcharts.chart("chart-container", chartConfig);
+    }
+  }, [data]);
 
-  return <div id="highcharts-container" />;
+  return <div id="chart-container"></div>;
 };
 
 export default HighchartsComponent;

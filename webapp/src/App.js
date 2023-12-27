@@ -1,142 +1,172 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import "./App.css";
 import axios from "axios";
 import * as Bootstrap from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
 import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
 import HighchartsComponent from "./HighchartsComponent";
 import "react-datepicker/dist/react-datepicker.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./App.css";
 
-const formatDate = (inputDate) => {
-  const date = new Date(inputDate);
+function App() {
+  const formatDate = (inputDate) => {
+    inputDate = new Date(inputDate);
+    const date = new Date(inputDate);
 
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
-};
+    return `${year}-${month}-${day}`;
+  };
 
-const App = () => {
   const [data, setData] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
   const [vrsRsidOptions, setVrsRsidOptions] = useState([]);
+  const [selectedVrsRsid, setSelectedVrsRsid] = useState([]);
   const [authorNameOptions, setAuthorNameOptions] = useState([]);
+  const [selectedAuthorName, setSelectedAuthorName] = useState([]);
   const [languageOptions, setlanguageOptions] = useState([]);
+  const [selectedlanguage, setSelectedlanguage] = useState([]);
   const [entityOptions, setEntityOptions] = useState([]);
+  const [selectedEntity, setSelectedEntity] = useState([]);
   const [statusOptions, setstatusOptions] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
   const [reportNmOptions, setReportNmOptions] = useState([]);
+  const [selectedReportNm, setSelectedReportNm] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [selectedFilters, setSelectedFilters] = useState({
-    vrsRsid: [],
-    authorName: [],
-    language: [],
-    entity: [],
-    status: [],
-    reportNm: [],
-  });
 
-  const fetchData = useCallback(
-    async (sd, ed, filters = false) => {
-      try {
-        const response = await axios.get("http://localhost:7778/api/query", {
-          params: {
-            startDate: sd,
-            endDate: ed,
-          },
-        });
+  const fetchData = async (sd, ed, filters = false) => {
+    // console.log(`${sd} => ${ed}`);
+    try {
+      const response = await axios.get("http://localhost:7778/api/query", {
+        params: {
+          startDate: sd,
+          endDate: ed,
+        },
+      });
+      console.log(response.data);
+      if (filters === false) {
+        // Extract unique values
+        const uniqueVrsRsidOptions = [
+          ...new Set(response.data.map((item) => item.VrsRsid)),
+        ];
+        const uniqueAuthorNameOptions = [
+          ...new Set(response.data.map((item) => item.author_name)),
+        ];
+        const uniqueLanguageOptions = [
+          ...new Set(response.data.map((item) => item.language)),
+        ];
+        const uniqueEntityOptions = [
+          ...new Set(response.data.map((item) => item.entity)),
+        ];
+        const uniqueStatusOptions = [
+          ...new Set(response.data.map((item) => item.status)),
+        ];
+        const uniqueReportNmOptions = [
+          ...new Set(response.data.map((item) => item.report_name)),
+        ];
 
-        if (!filters) {
-          const uniqueOptions = [
-            "VrsRsid",
-            "author_name",
-            "language",
-            "entity",
-            "status",
-            "report_name",
-          ].reduce((options, key) => {
-            options[key] = [...new Set(response.data.map((item) => item[key]))];
-            return options;
-          }, {});
-
-          setVrsRsidOptions(uniqueOptions.VrsRsid);
-          setAuthorNameOptions(uniqueOptions.author_name);
-          setlanguageOptions(uniqueOptions.language);
-          setEntityOptions(uniqueOptions.entity);
-          setstatusOptions(uniqueOptions.status);
-          setReportNmOptions(uniqueOptions.report_name);
-        }
-
-        setData(response.data);
-
-        if (filters) {
-          const newFilters = Object.keys(selectedFilters).reduce(
-            (filters, key) => {
-              filters[key] = selectedFilters[key].map((option) => option.value);
-              return filters;
-            },
-            {}
-          );
-
-          const filteredData = response.data.filter((item) =>
-            Object.keys(newFilters).every(
-              (key) =>
-                !newFilters[key].length || newFilters[key].includes(item[key])
-            )
-          );
-
-          setFilteredData(filteredData);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        // Update the state with the options
+        setVrsRsidOptions(uniqueVrsRsidOptions);
+        setAuthorNameOptions(uniqueAuthorNameOptions);
+        setlanguageOptions(uniqueLanguageOptions);
+        setEntityOptions(uniqueEntityOptions);
+        setstatusOptions(uniqueStatusOptions);
+        setReportNmOptions(uniqueReportNmOptions);
       }
-    },
-    [selectedFilters]
-  );
+      // Set data for further filtering
+      setData(response.data);
 
-  const updateFilters = (elem, selectedOptions) => {
+      if (filters === true) {
+        const selectedFilters = {
+          vrsRsid: selectedVrsRsid.map((option) => option.value),
+          authorName: selectedAuthorName.map((option) => option.value),
+          language: selectedlanguage.map((option) => option.value),
+          entity: selectedEntity.map((option) => option.value),
+          status: selectedStatus.map((option) => option.value),
+          reportNm: selectedReportNm.map((option) => option.value),
+        };
+        console.log(selectedFilters);
+        const filteredData = response.data.filter((item) => {
+          return (
+            (!selectedFilters.vrsRsid.length ||
+              selectedFilters.vrsRsid.includes(item.VrsRsid)) &&
+            (!selectedFilters.authorName.length ||
+              selectedFilters.authorName.includes(item.author_name)) &&
+            (!selectedFilters.language.length ||
+              selectedFilters.language.includes(item.language)) &&
+            (!selectedFilters.entity.length ||
+              selectedFilters.entity.includes(item.entity)) &&
+            (!selectedFilters.status.length ||
+              selectedFilters.status.includes(item.status)) &&
+            (!selectedFilters.reportNm.length ||
+              selectedFilters.reportNm.includes(item.report_name))
+          );
+        });
+        console.log(filteredData);
+        // Update the state with filtered data
+        setFilteredData(filteredData);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const updateFilters = (elem, item) => {
     const selectData = filteredData.length !== 0 ? filteredData : data;
+    console.log(item);
     const filtersData = selectData.filter((d) =>
-      selectedOptions.some((x) => d[elem] === x.value)
+      item.some((x) => d[elem] === x.value)
     );
+    // Extract unique values
+    const uniqueVrsRsidOptions = [
+      ...new Set(filtersData.map((item) => item.VrsRsid)),
+    ];
+    const uniqueAuthorNameOptions = [
+      ...new Set(filtersData.map((item) => item.author_name)),
+    ];
+    const uniqueLanguageOptions = [
+      ...new Set(filtersData.map((item) => item.language)),
+    ];
+    const uniqueEntityOptions = [
+      ...new Set(filtersData.map((item) => item.entity)),
+    ];
+    const uniqueStatusOptions = [
+      ...new Set(filtersData.map((item) => item.status)),
+    ];
+    const uniqueReportNmOptions = [
+      ...new Set(filtersData.map((item) => item.report_name)),
+    ];
 
-    const uniqueOptions = [
-      "VrsRsid",
-      "author_name",
-      "language",
-      "entity",
-      "status",
-      "report_name",
-    ].reduce((options, key) => {
-      options[key] = [...new Set(filtersData.map((item) => item[key]))];
-      return options;
-    }, {});
-
-    setVrsRsidOptions(uniqueOptions.VrsRsid);
-    setAuthorNameOptions(uniqueOptions.author_name);
-    setlanguageOptions(uniqueOptions.language);
-    setEntityOptions(uniqueOptions.entity);
-    setstatusOptions(uniqueOptions.status);
-    setReportNmOptions(uniqueOptions.report_name);
+    // Update the state with the options
+    setVrsRsidOptions(uniqueVrsRsidOptions);
+    setAuthorNameOptions(uniqueAuthorNameOptions);
+    setlanguageOptions(uniqueLanguageOptions);
+    setEntityOptions(uniqueEntityOptions);
+    setstatusOptions(uniqueStatusOptions);
+    setReportNmOptions(uniqueReportNmOptions);
   };
 
   const isInitialMount = useRef(true);
   useEffect(() => {
+    console.log(isInitialMount);
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-
+    // Set default date range (past 2 days)
     const defaultEndDate = new Date();
     const defaultStartDate = new Date();
     defaultStartDate.setDate(defaultStartDate.getDate() - 2);
 
+    // Initialize dateRange state with the default values
     setDateRange([defaultStartDate, defaultEndDate]);
-    fetchData(formatDate(defaultStartDate), formatDate(defaultEndDate));
-  }, [fetchData]);
 
-  const [startDate, endDate] = dateRange;
+    // Fetch data based on the default date range
+    fetchData(formatDate(defaultStartDate), formatDate(defaultEndDate));
+  }, []); // Empty dependency array means this effect runs once after the initial render
 
   return (
     <div className="w-100 clearfix">
@@ -169,12 +199,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.vrsRsid}
+            value={selectedVrsRsid}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                vrsRsid: selectedOptions,
-              });
+              setSelectedVrsRsid(selectedOptions);
               updateFilters("VrsRsid", selectedOptions);
             }}
           />
@@ -192,12 +219,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.authorName}
+            value={selectedAuthorName}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                authorName: selectedOptions,
-              });
+              setSelectedAuthorName(selectedOptions);
               updateFilters("author_name", selectedOptions);
             }}
           />
@@ -215,12 +239,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.language}
+            value={selectedlanguage}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                language: selectedOptions,
-              });
+              setSelectedlanguage(selectedOptions);
               updateFilters("language", selectedOptions);
             }}
           />
@@ -239,12 +260,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.entity}
+            value={selectedEntity}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                entity: selectedOptions,
-              });
+              setSelectedEntity(selectedOptions);
               updateFilters("entity", selectedOptions);
             }}
           />
@@ -262,12 +280,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.status}
+            value={selectedStatus}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                status: selectedOptions,
-              });
+              setSelectedStatus(selectedOptions);
               updateFilters("status", selectedOptions);
             }}
           />
@@ -285,12 +300,9 @@ const App = () => {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedFilters.reportNm}
+            value={selectedReportNm}
             onChange={(selectedOptions) => {
-              setSelectedFilters({
-                ...selectedFilters,
-                reportNm: selectedOptions,
-              });
+              setSelectedReportNm(selectedOptions);
               updateFilters("report_name", selectedOptions);
             }}
           />
@@ -316,6 +328,6 @@ const App = () => {
       </div>
     </div>
   );
-};
+}
 
 export default App;
