@@ -1,96 +1,142 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import * as Bootstrap from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
 import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
 import HighchartsComponent from "./HighchartsComponent";
 import "react-datepicker/dist/react-datepicker.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 
-function App() {
-  const formatDate = (inputDate) => {
-    inputDate = new Date(inputDate);
-    const date = new Date(inputDate);
+const formatDate = (inputDate) => {
+  const date = new Date(inputDate);
 
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
-  };
+  return `${year}-${month}-${day}`;
+};
 
-  const [data] = useState([]);
+const App = () => {
+  const [data, setData] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
-  const [startDate, endDate] = dateRange;
   const [vrsRsidOptions, setVrsRsidOptions] = useState([]);
-  const [selectedVrsRsid, setSelectedVrsRsid] = useState([]);
   const [authorNameOptions, setAuthorNameOptions] = useState([]);
-  const [selectedAuthorName, setSelectedAuthorName] = useState([]);
   const [languageOptions, setlanguageOptions] = useState([]);
-  const [selectedlanguage, setSelectedlanguage] = useState([]);
   const [entityOptions, setEntityOptions] = useState([]);
-  const [selectedEntity, setSelectedEntity] = useState([]);
   const [statusOptions, setstatusOptions] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState([]);
   const [reportNmOptions, setReportNmOptions] = useState([]);
-  const [selectedReportNm, setSelectedReportNm] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState({
+    vrsRsid: [],
+    authorName: [],
+    language: [],
+    entity: [],
+    status: [],
+    reportNm: [],
+  });
 
-  const fetchData = async (sd, ed) => {
-    console.log(`${sd} => ${ed}`);
-    try {
-      const response = await axios.get("http://localhost:7778/api/query", {
-        params: {
-          startDate: sd,
-          endDate: ed,
-        },
-      });
-      console.log(response.data);
+  const fetchData = useCallback(
+    async (sd, ed, filters = false) => {
+      try {
+        const response = await axios.get("http://localhost:7778/api/query", {
+          params: {
+            startDate: sd,
+            endDate: ed,
+          },
+        });
 
-      // Extract unique values
-      const uniqueVrsRsidOptions = [
-        ...new Set(response.data.map((item) => item.VrsRsid)),
-      ];
-      const uniqueAuthorNameOptions = [
-        ...new Set(response.data.map((item) => item.author_name)),
-      ];
-      const uniqueLanguageOptions = [
-        ...new Set(response.data.map((item) => item.language)),
-      ];
-      const uniqueEntityOptions = [
-        ...new Set(response.data.map((item) => item.entity)),
-      ];
-      const uniqueStatusOptions = [
-        ...new Set(response.data.map((item) => item.status)),
-      ];
-      const uniqueReportNmOptions = [
-        ...new Set(response.data.map((item) => item.report_name)),
-      ];
+        if (!filters) {
+          const uniqueOptions = [
+            "VrsRsid",
+            "author_name",
+            "language",
+            "entity",
+            "status",
+            "report_name",
+          ].reduce((options, key) => {
+            options[key] = [...new Set(response.data.map((item) => item[key]))];
+            return options;
+          }, {});
 
-      // Update the state with the options
-      setVrsRsidOptions(uniqueVrsRsidOptions);
-      setAuthorNameOptions(uniqueAuthorNameOptions);
-      setlanguageOptions(uniqueLanguageOptions);
-      setEntityOptions(uniqueEntityOptions);
-      setstatusOptions(uniqueStatusOptions);
-      setReportNmOptions(uniqueReportNmOptions);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+          setVrsRsidOptions(uniqueOptions.VrsRsid);
+          setAuthorNameOptions(uniqueOptions.author_name);
+          setlanguageOptions(uniqueOptions.language);
+          setEntityOptions(uniqueOptions.entity);
+          setstatusOptions(uniqueOptions.status);
+          setReportNmOptions(uniqueOptions.report_name);
+        }
+
+        setData(response.data);
+
+        if (filters) {
+          const newFilters = Object.keys(selectedFilters).reduce(
+            (filters, key) => {
+              filters[key] = selectedFilters[key].map((option) => option.value);
+              return filters;
+            },
+            {}
+          );
+
+          const filteredData = response.data.filter((item) =>
+            Object.keys(newFilters).every(
+              (key) =>
+                !newFilters[key].length || newFilters[key].includes(item[key])
+            )
+          );
+
+          setFilteredData(filteredData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    [selectedFilters]
+  );
+
+  const updateFilters = (elem, selectedOptions) => {
+    const selectData = filteredData.length !== 0 ? filteredData : data;
+    const filtersData = selectData.filter((d) =>
+      selectedOptions.some((x) => d[elem] === x.value)
+    );
+
+    const uniqueOptions = [
+      "VrsRsid",
+      "author_name",
+      "language",
+      "entity",
+      "status",
+      "report_name",
+    ].reduce((options, key) => {
+      options[key] = [...new Set(filtersData.map((item) => item[key]))];
+      return options;
+    }, {});
+
+    setVrsRsidOptions(uniqueOptions.VrsRsid);
+    setAuthorNameOptions(uniqueOptions.author_name);
+    setlanguageOptions(uniqueOptions.language);
+    setEntityOptions(uniqueOptions.entity);
+    setstatusOptions(uniqueOptions.status);
+    setReportNmOptions(uniqueOptions.report_name);
   };
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    // Set default date range (past 2 days)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const defaultEndDate = new Date();
     const defaultStartDate = new Date();
     defaultStartDate.setDate(defaultStartDate.getDate() - 2);
 
-    // Initialize dateRange state with the default values
     setDateRange([defaultStartDate, defaultEndDate]);
-
-    // Fetch data based on the default date range
     fetchData(formatDate(defaultStartDate), formatDate(defaultEndDate));
-  }, []); // Empty dependency array means this effect runs once after the initial render
+  }, [fetchData]);
+
+  const [startDate, endDate] = dateRange;
 
   return (
     <div className="w-100 clearfix">
@@ -106,10 +152,6 @@ function App() {
             endDate={endDate}
             onChange={(update) => {
               setDateRange(update);
-              // Call fetchData when date range is selected
-              if (update[0] && update[1]) {
-                fetchData(formatDate(update[0]), formatDate(update[1]));
-              }
             }}
             shouldCloseOnSelect={true}
           />
@@ -127,8 +169,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedVrsRsid}
-            onChange={(selectedOptions) => setSelectedVrsRsid(selectedOptions)}
+            value={selectedFilters.vrsRsid}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                vrsRsid: selectedOptions,
+              });
+              updateFilters("VrsRsid", selectedOptions);
+            }}
           />
         </div>
 
@@ -144,10 +192,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedAuthorName}
-            onChange={(selectedOptions) =>
-              setSelectedAuthorName(selectedOptions)
-            }
+            value={selectedFilters.authorName}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                authorName: selectedOptions,
+              });
+              updateFilters("author_name", selectedOptions);
+            }}
           />
         </div>
 
@@ -163,8 +215,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedlanguage}
-            onChange={(selectedOptions) => setSelectedlanguage(selectedOptions)}
+            value={selectedFilters.language}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                language: selectedOptions,
+              });
+              updateFilters("language", selectedOptions);
+            }}
           />
         </div>
       </div>
@@ -181,8 +239,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedEntity}
-            onChange={(selectedOptions) => setSelectedEntity(selectedOptions)}
+            value={selectedFilters.entity}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                entity: selectedOptions,
+              });
+              updateFilters("entity", selectedOptions);
+            }}
           />
         </div>
 
@@ -198,8 +262,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedStatus}
-            onChange={(selectedOptions) => setSelectedStatus(selectedOptions)}
+            value={selectedFilters.status}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                status: selectedOptions,
+              });
+              updateFilters("status", selectedOptions);
+            }}
           />
         </div>
 
@@ -215,8 +285,14 @@ function App() {
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedReportNm}
-            onChange={(selectedOptions) => setSelectedReportNm(selectedOptions)}
+            value={selectedFilters.reportNm}
+            onChange={(selectedOptions) => {
+              setSelectedFilters({
+                ...selectedFilters,
+                reportNm: selectedOptions,
+              });
+              updateFilters("report_name", selectedOptions);
+            }}
           />
         </div>
         <div className="filter-set-2 w-25 p-2 float-start">
@@ -228,7 +304,7 @@ function App() {
             name="selectFilters"
             className="custom-button"
             onClick={() =>
-              fetchData(formatDate(startDate), formatDate(endDate))
+              fetchData(formatDate(startDate), formatDate(endDate), true)
             }
           >
             Select Filters
@@ -236,10 +312,10 @@ function App() {
         </div>
       </div>
       <div>
-        <HighchartsComponent />
+        <HighchartsComponent data={filteredData} />
       </div>
     </div>
   );
-}
+};
 
 export default App;
