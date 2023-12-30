@@ -44,3 +44,28 @@
 #datePicker {
   width: 100% !important;
 }
+
+#dashboard {
+  background-color: #1d4F91 !important;
+}
+
+.piecharts {
+  width: 70% !important;
+  background-color: #283347 !important;
+}
+
+.stats {
+  width: 27.5% !important;
+  background-color: #283347 !important;
+  color: #81b0d2 !important;
+}
+
+.filterLabels {
+  color: #81b0d2 !important;
+}
+
+.highlight-row {
+  font-weight: bolder;
+}
+
+

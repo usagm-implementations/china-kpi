@@ -5,7 +5,8 @@ import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
-import HighchartsComponent from "./HighchartsComponent";
+import PieComponent from "./PieComponent";
+import StatsComponent from "./stats";
 import "react-datepicker/dist/react-datepicker.css";
 
 function App() {
@@ -36,9 +37,9 @@ function App() {
   const [reportNmOptions, setReportNmOptions] = useState([]);
   const [selectedReportNm, setSelectedReportNm] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [isDataFetched, setIsDataFetched] = useState(false);
 
   const fetchData = async (sd, ed, filters = false) => {
-    // console.log(`${sd} => ${ed}`);
     try {
       const response = await axios.get("http://localhost:7778/api/query", {
         params: {
@@ -78,6 +79,7 @@ function App() {
       }
       // Set data for further filtering
       setData(response.data);
+      setIsDataFetched(true);
 
       if (filters === true) {
         const selectedFilters = {
@@ -159,7 +161,8 @@ function App() {
     // Set default date range (past 2 days)
     const defaultEndDate = new Date();
     const defaultStartDate = new Date();
-    defaultStartDate.setDate(defaultStartDate.getDate() - 2);
+    defaultStartDate.setDate(defaultStartDate.getDate() - 3);
+    defaultEndDate.setDate(defaultEndDate.getDate() - 1);
 
     // Initialize dateRange state with the default values
     setDateRange([defaultStartDate, defaultEndDate]);
@@ -172,7 +175,9 @@ function App() {
     <div className="w-100 clearfix">
       <div className="filters w-100 p-2 clearfix">
         <div className="filter-set-1 w-25 p-2 float-start">
-          <label htmlFor="datePicker">Select Date Range:</label>
+          <label className="filterLabels" htmlFor="datePicker">
+            Select Date Range:
+          </label>
           <br />
           <DatePicker
             id="datePicker"
@@ -188,7 +193,9 @@ function App() {
         </div>
 
         <div className="filter-set-1 w-25 p-2 float-start">
-          <label htmlFor="vrsRsid">Select VrsRsid:</label>
+          <label className="filterLabels" htmlFor="vrsRsid">
+            Select VrsRsid:
+          </label>
           <MultiSelect
             id="vrsRsid"
             isMulti
@@ -208,7 +215,9 @@ function App() {
         </div>
 
         <div className="filter-set-1 w-25 p-2 float-start">
-          <label htmlFor="authorName">Select Author Name:</label>
+          <label className="filterLabels" htmlFor="authorName">
+            Select Author Name:
+          </label>
           <MultiSelect
             id="authorName"
             isMulti
@@ -228,7 +237,9 @@ function App() {
         </div>
 
         <div className="filter-set-1 w-25 p-2 float-start">
-          <label htmlFor="language">Select Language:</label>
+          <label className="filterLabels" htmlFor="language">
+            Select Language:
+          </label>
           <MultiSelect
             id="language"
             isMulti
@@ -249,7 +260,9 @@ function App() {
       </div>
       <div className="filters w-100 p-2 clearfix">
         <div className="filter-set-2 w-25 p-2 float-start">
-          <label htmlFor="entity">Select Entity:</label>
+          <label className="filterLabels" htmlFor="entity">
+            Select Entity:
+          </label>
           <MultiSelect
             id="entity"
             isMulti
@@ -269,7 +282,9 @@ function App() {
         </div>
 
         <div className="filter-set-2 w-25 p-2 float-start">
-          <label htmlFor="status">Select Status:</label>
+          <label className="filterLabels" htmlFor="status">
+            Select Status:
+          </label>
           <MultiSelect
             id="status"
             isMulti
@@ -289,7 +304,9 @@ function App() {
         </div>
 
         <div className="filter-set-2 w-25 p-2 float-start">
-          <label htmlFor="reportNm">Select Report Name:</label>
+          <label className="filterLabels" htmlFor="reportNm">
+            Select Report Name:
+          </label>
           <MultiSelect
             id="reportNm"
             isMulti
@@ -308,7 +325,7 @@ function App() {
           />
         </div>
         <div className="filter-set-2 w-25 p-2 float-start">
-          <label htmlFor="selectFilters">Select Filters:</label>
+          {/* <label htmlFor="selectFilters">Select Filters:</label> */}
           <br />
           <Bootstrap.Button
             variant="primary"
@@ -323,8 +340,17 @@ function App() {
           </Bootstrap.Button>
         </div>
       </div>
-      <div>
-        <HighchartsComponent data={filteredData} />
+      <div id="dashboard" className="m-2 w-100 clearfix d-flex">
+        <div className="piecharts m-2 float-start flex-fill">
+          {isDataFetched && (
+            <PieComponent data={data} filteredData={filteredData} />
+          )}
+        </div>
+        <div className="stats mx-1 my-2 float-start flex-fill">
+          {isDataFetched && (
+            <StatsComponent data={data} ed={formatDate(endDate)} />
+          )}
+        </div>
       </div>
     </div>
   );
