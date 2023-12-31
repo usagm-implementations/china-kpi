@@ -13,7 +13,8 @@ const PieChart = ({ title, center, size, data, drilldowns }) => {
     () => ({
       chart: {
         type: "pie",
-        spacing: [10, 0, 10, 0], // Adjust spacing for the pie charts
+        height: "60%",
+        // spacing: [10, 0, 10, 0], // Adjust spacing for the pie charts
         backgroundColor: "#283347",
       },
       title: {

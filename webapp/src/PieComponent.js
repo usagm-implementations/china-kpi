@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import PieChart from "./PieChart";
@@ -80,6 +80,8 @@ const PieComponent = ({ data, filteredData }) => {
     return result;
   };
 
+  const [mainChartSize, setMainChartSize] = useState("65%");
+
   const drilldownDataPageViews = useMemo(
     () => generateDrilldown(chartData, "entity", "VrsRsid", "page_views"),
     [chartData]
@@ -104,21 +106,6 @@ const PieComponent = ({ data, filteredData }) => {
   );
   const mainDataVisits = useMemo(
     () => calcPct("entity", "visits", chartData),
-    [chartData]
-  );
-
-  const drilldownDataAvgTime = useMemo(
-    () =>
-      generateDrilldown(
-        chartData,
-        "entity",
-        "VrsRsid",
-        "avg_time_spent_on_site_per_visit"
-      ),
-    [chartData]
-  );
-  const mainDataAvgTime = useMemo(
-    () => calcPct("entity", "avg_time_spent_on_site_per_visit", chartData),
     [chartData]
   );
 
@@ -149,45 +136,52 @@ const PieComponent = ({ data, filteredData }) => {
     [chartData]
   );
 
+  useEffect(() => {
+    setMainChartSize(chartData === data ? "55%" : "50%");
+  }, [chartData, data]);
+
   return (
     <div className="pies clearfix w-100 column">
       <div className="pies-01 clearfix w-100">
-        <div className="pageviewsPie float-start w-25">
+        <div className="pageviewsPie float-start" style={{ width: "33.33%" }}>
           <PieChart
             title="Page Views"
-            center={["45%", "30%"]}
-            size="40%"
+            center={["55%", "30%"]}
+            size={mainChartSize}
             data={mainDataPageViews}
             drilldowns={drilldownDataPageViews}
           />
         </div>
-        <div className="articleViewsPie float-start w-25">
+        <div
+          className="articleViewsPie float-start"
+          style={{ width: "33.33%" }}
+        >
           <PieChart
             title="Article Views"
-            center={["55%", "30%"]}
-            size="40%"
+            center={["50%", "30%"]}
+            size={mainChartSize}
             data={mainDataArticleViews}
             drilldowns={drilldownDataArticleViews}
           />
         </div>
-        <div className="visitsPie float-start w-25">
+        <div className="visitsPie float-start" style={{ width: "33.33%" }}>
           <PieChart
             title="Visits"
             center={["55%", "30%"]}
-            size="40%"
+            size={mainChartSize}
             data={mainDataVisits}
             drilldowns={drilldownDataVisits}
           />
         </div>
-        <div className="avgTimePie float-start w-25">
+        {/* <div className="avgTimePie float-start w-25">
           <PieChart
             title="Avg. Time Spent on Site Per Visit"
             center={["50%", "30%"]}
-            size="40%"
+            size="55%"
             data={mainDataAvgTime}
             drilldowns={drilldownDataAvgTime}
           />
-        </div>
+        </div> */}
       </div>
       <div className="pies-02 clearfix w-100">
         <div
@@ -197,7 +191,7 @@ const PieComponent = ({ data, filteredData }) => {
           <PieChart
             title="Return Visits"
             center={["55%", "30%"]}
-            size="30%"
+            size={mainChartSize}
             data={mainDataReturnVisits}
             drilldowns={drilldownDataReturnVisits}
           />
@@ -206,7 +200,7 @@ const PieComponent = ({ data, filteredData }) => {
           <PieChart
             title="Audio Play"
             center={["55%", "30%"]}
-            size="30%"
+            size={mainChartSize}
             data={mainDataAudioPlay}
             drilldowns={drilldownDataAudioPlay}
           />
@@ -215,7 +209,7 @@ const PieComponent = ({ data, filteredData }) => {
           <PieChart
             title="Video Play"
             center={["55%", "30%"]}
-            size="30%"
+            size={mainChartSize}
             data={mainDataVideoPlay}
             drilldowns={drilldownDataVideoPlay}
           />

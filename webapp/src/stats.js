@@ -9,20 +9,11 @@ const StatsComponent = ({ data, ed }) => {
     return inputDate.toISOString().split("T")[0];
   };
 
-  //   const formatToDateString = (inputDate) => {
-  //     inputDate = new Date(`${inputDate}T00:00:00Z`);
-  //     return inputDate.toLocaleDateString("en-US", {
-  //       ...{ month: "short", day: "numeric", year: "numeric" },
-  //       timeZone: "UTC",
-  //     });
-  //   };
-
-  const averages = (elem, val, properties, statsData, languageEntity = "") => {
+  const averages = (elem, val, properties, statsData) => {
     const elemData = statsData.filter(
       (sd) => formatDate(sd.report_end_date) === ed && sd[elem] === val
     );
-    // console.log(elemData);
-    var { sum, count } = elemData.reduce(
+    let { sum, count } = elemData.reduce(
       (acc, obj) => {
         if (
           properties.every(
@@ -38,6 +29,7 @@ const StatsComponent = ({ data, ed }) => {
       },
       { sum: Object.fromEntries(properties.map((prop) => [prop, 0])), count: 0 }
     );
+
     val = val.includes("cantonese")
       ? "Cantonese"
       : val.includes("mandarin")
@@ -61,7 +53,6 @@ const StatsComponent = ({ data, ed }) => {
     "page_views",
     "article_views",
     "visits",
-    // "avg_time_spent_on_site_per_visit",
     "return_visits",
     "audio_play",
     "video_play_e5",
@@ -109,7 +100,6 @@ const StatsComponent = ({ data, ed }) => {
     voaCantoneseAvg,
     voaMandarinAvg
   );
-  console.log(allAvgs);
 
   return (
     <div className="avgs clearfix w-100 column">

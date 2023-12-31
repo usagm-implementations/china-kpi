@@ -7,6 +7,7 @@ import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
 import PieComponent from "./PieComponent";
 import StatsComponent from "./stats";
+import LeaderboardComponent from "./leaderboard";
 import "react-datepicker/dist/react-datepicker.css";
 
 function App() {
@@ -161,7 +162,7 @@ function App() {
     // Set default date range (past 2 days)
     const defaultEndDate = new Date();
     const defaultStartDate = new Date();
-    defaultStartDate.setDate(defaultStartDate.getDate() - 3);
+    defaultStartDate.setDate(defaultStartDate.getDate() - 8);
     defaultEndDate.setDate(defaultEndDate.getDate() - 1);
 
     // Initialize dateRange state with the default values
@@ -351,6 +352,15 @@ function App() {
             <StatsComponent data={data} ed={formatDate(endDate)} />
           )}
         </div>
+      </div>
+      <div id="leaderboard" className="m-2 w-100 clearfix d-flex">
+        {isDataFetched && (
+          <LeaderboardComponent
+            data={data}
+            sd={formatDate(startDate)}
+            ed={formatDate(endDate)}
+          />
+        )}
       </div>
     </div>
   );
