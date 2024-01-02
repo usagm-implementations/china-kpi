@@ -1,0 +1,6 @@
+- go mod init github.com/usagm-implementations/china-kpi
+- sh compile-protos.sh
+- go mod tidy
+- go run server/main.go
+- yarn install
+- yarn start
