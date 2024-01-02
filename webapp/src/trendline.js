@@ -1,15 +1,18 @@
 import React, { useMemo } from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 const TrendLine = ({ dates, nm, trendData }) => {
+  dayjs.locale("en");
   const addCommas = (x) =>
     x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
   const options = useMemo(() => ({
     chart: {
       type: "areaspline",
       backgroundColor: "#283347",
-      height: "30%",
+      height: "45%",
     },
     title: {
       text: "",
@@ -34,12 +37,15 @@ const TrendLine = ({ dates, nm, trendData }) => {
       backgroundColor: "#283347",
       style: { color: "#fff" },
       formatter: function () {
-        console.log(this);
-        // let date_format = filters.group_by == 'day' ?
-        //   moment(this.key).format('MMM DD, YYYY') :
-        //   moment(this.key).format('MMM YYYY');
+        const yFormat =
+          this.point.series.name === "conversion_rate" ||
+          this.point.series.name === "return_visit_rate"
+            ? `${this.y.toFixed(2)}%`
+            : addCommas(this.y);
         let tooltip = `
-              <span>${addCommas(this.y)}</span>`;
+              <span><b><u>${dayjs(this.key).format(
+                "MMM DD, YYYY"
+              )}</u></b>: ${yFormat}</span>`;
         return tooltip;
       },
       useHTML: true,

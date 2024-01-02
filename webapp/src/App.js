@@ -8,6 +8,7 @@ import MultiSelect from "react-select";
 import PieComponent from "./PieComponent";
 import StatsComponent from "./stats";
 import LeaderboardComponent from "./leaderboard";
+import KPIComponent from "./kpiComponent";
 import "react-datepicker/dist/react-datepicker.css";
 
 function App() {
@@ -353,14 +354,11 @@ function App() {
           )}
         </div>
       </div>
-      <div id="leaderboard" className="m-2 w-100 clearfix d-flex">
-        {isDataFetched && (
-          <LeaderboardComponent
-            data={data}
-            sd={formatDate(startDate)}
-            ed={formatDate(endDate)}
-          />
-        )}
+      <div className="leaderboard m-2 w-100 clearfix d-flex">
+        {isDataFetched && <LeaderboardComponent data={data} />}
+      </div>
+      <div className="kpi m-2 w-100 clearfix d-flex">
+        {isDataFetched && <KPIComponent data={data} />}
       </div>
     </div>
   );

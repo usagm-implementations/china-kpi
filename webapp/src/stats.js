@@ -2,8 +2,13 @@ import React, { useEffect, useMemo } from "react";
 import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 const StatsComponent = ({ data, ed }) => {
+  dayjs.locale("en");
+  const addCommas = (x) =>
+    x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
   const formatDate = (inputDate) => {
     inputDate = new Date(inputDate);
     return inputDate.toISOString().split("T")[0];
@@ -104,7 +109,7 @@ const StatsComponent = ({ data, ed }) => {
   return (
     <div className="avgs clearfix w-100 column">
       <h4 className="mt-1 ms-1">
-        <u>Average Stats on {ed}</u>
+        <u>Average Stats on {dayjs(ed).format("MMM DD, YYYY")}</u>
       </h4>
       <br />
       <table className="table table-dark">
@@ -128,12 +133,12 @@ const StatsComponent = ({ data, ed }) => {
               }
             >
               <td>{avg.val}</td>
-              <td>{avg.page_views}</td>
-              <td>{avg.article_views}</td>
-              <td>{avg.visits}</td>
-              <td>{avg.return_visits}</td>
-              <td>{avg.audio_play}</td>
-              <td>{avg.video_play_e5}</td>
+              <td>{addCommas(avg.page_views)}</td>
+              <td>{addCommas(avg.article_views)}</td>
+              <td>{addCommas(avg.visits)}</td>
+              <td>{addCommas(avg.return_visits)}</td>
+              <td>{addCommas(avg.audio_play)}</td>
+              <td>{addCommas(avg.video_play_e5)}</td>
             </tr>
           ))}
         </tbody>

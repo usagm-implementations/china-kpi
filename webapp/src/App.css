@@ -64,7 +64,12 @@
   color: #81b0d2 !important;
 }
 
-#leaderboard {
+.leaderboard {
+  background-color: #283347 !important;
+  color: #81b0d2 !important;
+}
+
+.kpi {
   background-color: #283347 !important;
   color: #81b0d2 !important;
 }
