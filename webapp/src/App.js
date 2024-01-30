@@ -28,16 +28,8 @@ function App() {
   const [startDate, endDate] = dateRange;
   const [vrsRsidOptions, setVrsRsidOptions] = useState([]);
   const [selectedVrsRsid, setSelectedVrsRsid] = useState([]);
-  const [authorNameOptions, setAuthorNameOptions] = useState([]);
-  const [selectedAuthorName, setSelectedAuthorName] = useState([]);
-  const [languageOptions, setlanguageOptions] = useState([]);
-  const [selectedlanguage, setSelectedlanguage] = useState([]);
   const [entityOptions, setEntityOptions] = useState([]);
   const [selectedEntity, setSelectedEntity] = useState([]);
-  const [statusOptions, setstatusOptions] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState([]);
-  const [reportNmOptions, setReportNmOptions] = useState([]);
-  const [selectedReportNm, setSelectedReportNm] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFetched, setIsDataFetched] = useState(false);
 
@@ -55,29 +47,13 @@ function App() {
         const uniqueVrsRsidOptions = [
           ...new Set(response.data.map((item) => item.VrsRsid)),
         ];
-        const uniqueAuthorNameOptions = [
-          ...new Set(response.data.map((item) => item.author_name)),
-        ];
-        const uniqueLanguageOptions = [
-          ...new Set(response.data.map((item) => item.language)),
-        ];
         const uniqueEntityOptions = [
           ...new Set(response.data.map((item) => item.entity)),
-        ];
-        const uniqueStatusOptions = [
-          ...new Set(response.data.map((item) => item.status)),
-        ];
-        const uniqueReportNmOptions = [
-          ...new Set(response.data.map((item) => item.report_name)),
         ];
 
         // Update the state with the options
         setVrsRsidOptions(uniqueVrsRsidOptions);
-        setAuthorNameOptions(uniqueAuthorNameOptions);
-        setlanguageOptions(uniqueLanguageOptions);
         setEntityOptions(uniqueEntityOptions);
-        setstatusOptions(uniqueStatusOptions);
-        setReportNmOptions(uniqueReportNmOptions);
       }
       // Set data for further filtering
       setData(response.data);
@@ -86,27 +62,15 @@ function App() {
       if (filters === true) {
         const selectedFilters = {
           vrsRsid: selectedVrsRsid.map((option) => option.value),
-          authorName: selectedAuthorName.map((option) => option.value),
-          language: selectedlanguage.map((option) => option.value),
           entity: selectedEntity.map((option) => option.value),
-          status: selectedStatus.map((option) => option.value),
-          reportNm: selectedReportNm.map((option) => option.value),
         };
         console.log(selectedFilters);
         const filteredData = response.data.filter((item) => {
           return (
             (!selectedFilters.vrsRsid.length ||
               selectedFilters.vrsRsid.includes(item.VrsRsid)) &&
-            (!selectedFilters.authorName.length ||
-              selectedFilters.authorName.includes(item.author_name)) &&
-            (!selectedFilters.language.length ||
-              selectedFilters.language.includes(item.language)) &&
             (!selectedFilters.entity.length ||
-              selectedFilters.entity.includes(item.entity)) &&
-            (!selectedFilters.status.length ||
-              selectedFilters.status.includes(item.status)) &&
-            (!selectedFilters.reportNm.length ||
-              selectedFilters.reportNm.includes(item.report_name))
+              selectedFilters.entity.includes(item.entity))
           );
         });
         console.log(filteredData);
@@ -128,29 +92,13 @@ function App() {
     const uniqueVrsRsidOptions = [
       ...new Set(filtersData.map((item) => item.VrsRsid)),
     ];
-    const uniqueAuthorNameOptions = [
-      ...new Set(filtersData.map((item) => item.author_name)),
-    ];
-    const uniqueLanguageOptions = [
-      ...new Set(filtersData.map((item) => item.language)),
-    ];
     const uniqueEntityOptions = [
       ...new Set(filtersData.map((item) => item.entity)),
-    ];
-    const uniqueStatusOptions = [
-      ...new Set(filtersData.map((item) => item.status)),
-    ];
-    const uniqueReportNmOptions = [
-      ...new Set(filtersData.map((item) => item.report_name)),
     ];
 
     // Update the state with the options
     setVrsRsidOptions(uniqueVrsRsidOptions);
-    setAuthorNameOptions(uniqueAuthorNameOptions);
-    setlanguageOptions(uniqueLanguageOptions);
     setEntityOptions(uniqueEntityOptions);
-    setstatusOptions(uniqueStatusOptions);
-    setReportNmOptions(uniqueReportNmOptions);
   };
 
   const isInitialMount = useRef(true);
@@ -194,73 +142,6 @@ function App() {
           />
         </div>
 
-        <div className="filter-set-1 w-25 p-2 float-start">
-          <label className="filterLabels" htmlFor="vrsRsid">
-            Select VrsRsid:
-          </label>
-          <MultiSelect
-            id="vrsRsid"
-            isMulti
-            name="vrsRsid"
-            options={vrsRsidOptions?.map((vrsRsid) => ({
-              value: vrsRsid,
-              label: vrsRsid,
-            }))}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            value={selectedVrsRsid}
-            onChange={(selectedOptions) => {
-              setSelectedVrsRsid(selectedOptions);
-              updateFilters("VrsRsid", selectedOptions);
-            }}
-          />
-        </div>
-
-        <div className="filter-set-1 w-25 p-2 float-start">
-          <label className="filterLabels" htmlFor="authorName">
-            Select Author Name:
-          </label>
-          <MultiSelect
-            id="authorName"
-            isMulti
-            name="authorName"
-            options={authorNameOptions?.map((author) => ({
-              value: author,
-              label: author,
-            }))}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            value={selectedAuthorName}
-            onChange={(selectedOptions) => {
-              setSelectedAuthorName(selectedOptions);
-              updateFilters("author_name", selectedOptions);
-            }}
-          />
-        </div>
-
-        <div className="filter-set-1 w-25 p-2 float-start">
-          <label className="filterLabels" htmlFor="language">
-            Select Language:
-          </label>
-          <MultiSelect
-            id="language"
-            isMulti
-            name="language"
-            options={languageOptions?.map((lang) => ({
-              value: lang,
-              label: lang,
-            }))}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            value={selectedlanguage}
-            onChange={(selectedOptions) => {
-              setSelectedlanguage(selectedOptions);
-              updateFilters("language", selectedOptions);
-            }}
-          />
-        </div>
-      </div>
-      <div className="filters w-100 p-2 clearfix">
         <div className="filter-set-2 w-25 p-2 float-start">
           <label className="filterLabels" htmlFor="entity">
             Select Entity:
@@ -283,49 +164,28 @@ function App() {
           />
         </div>
 
-        <div className="filter-set-2 w-25 p-2 float-start">
-          <label className="filterLabels" htmlFor="status">
-            Select Status:
+        <div className="filter-set-1 w-25 p-2 float-start">
+          <label className="filterLabels" htmlFor="vrsRsid">
+            Select VrsRsid:
           </label>
           <MultiSelect
-            id="status"
+            id="vrsRsid"
             isMulti
-            name="status"
-            options={statusOptions?.map((st) => ({
-              value: st,
-              label: st,
+            name="vrsRsid"
+            options={vrsRsidOptions?.map((vrsRsid) => ({
+              value: vrsRsid,
+              label: vrsRsid,
             }))}
             className="basic-multi-select"
             classNamePrefix="select"
-            value={selectedStatus}
+            value={selectedVrsRsid}
             onChange={(selectedOptions) => {
-              setSelectedStatus(selectedOptions);
-              updateFilters("status", selectedOptions);
+              setSelectedVrsRsid(selectedOptions);
+              updateFilters("VrsRsid", selectedOptions);
             }}
           />
         </div>
 
-        <div className="filter-set-2 w-25 p-2 float-start">
-          <label className="filterLabels" htmlFor="reportNm">
-            Select Report Name:
-          </label>
-          <MultiSelect
-            id="reportNm"
-            isMulti
-            name="reportNm"
-            options={reportNmOptions?.map((report) => ({
-              value: report,
-              label: report,
-            }))}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            value={selectedReportNm}
-            onChange={(selectedOptions) => {
-              setSelectedReportNm(selectedOptions);
-              updateFilters("report_name", selectedOptions);
-            }}
-          />
-        </div>
         <div className="filter-set-2 w-25 p-2 float-start">
           {/* <label htmlFor="selectFilters">Select Filters:</label> */}
           <br />
@@ -342,6 +202,7 @@ function App() {
           </Bootstrap.Button>
         </div>
       </div>
+
       <div id="dashboard" className="m-2 w-100 clearfix d-flex">
         <div className="piecharts m-2 float-start flex-fill">
           {isDataFetched && (
