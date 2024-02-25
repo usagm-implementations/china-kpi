@@ -3,17 +3,13 @@ import "./App.css";
 import axios from "axios";
 import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-// import DatePicker from "react-datepicker";
+import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
 import PieComponent from "./PieComponent";
 import StatsComponent from "./stats";
 import LeaderboardComponent from "./leaderboard";
 import KPIComponent from "./kpiComponent";
-// import "react-datepicker/dist/react-datepicker.css";
-
-import { DateRangePicker } from "react-date-range";
-import "react-date-range/dist/styles.css"; // main style file
-import "react-date-range/dist/theme/default.css"; // theme css file
+import "react-datepicker/dist/react-datepicker.css";
 
 function App() {
   const formatDate = (inputDate) => {
@@ -36,14 +32,6 @@ function App() {
   const [selectedEntity, setSelectedEntity] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFetched, setIsDataFetched] = useState(false);
-  const [isCalendarOpen, setCalendarOpen] = useState(false);
-  const [selection, setSelection] = useState([
-    {
-      startDate: new Date(),
-      endDate: null,
-      key: "selection",
-    },
-  ]);
 
   const fetchData = async (sd, ed, filters = false) => {
     try {
@@ -115,49 +103,23 @@ function App() {
 
   const isInitialMount = useRef(true);
   useEffect(() => {
-    // Calculate the start date for the last 7 days
-    const startDate = new Date();
-    const endDate = new Date();
-    startDate.setDate(startDate.getDate() - 3);
-    endDate.setDate(endDate.getDate() - 1);
-    setSelection([
-      {
-        startDate: startDate,
-        endDate: endDate,
-        key: "selection",
-      },
-    ]);
-
     console.log(isInitialMount);
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
+    // Set default date range (past 2 days)
+    const defaultEndDate = new Date();
+    const defaultStartDate = new Date();
+    defaultStartDate.setDate(defaultStartDate.getDate() - 8);
+    defaultEndDate.setDate(defaultEndDate.getDate() - 1);
 
     // Initialize dateRange state with the default values
-    setDateRange([startDate, endDate]);
+    setDateRange([defaultStartDate, defaultEndDate]);
 
     // Fetch data based on the default date range
-    fetchData(formatDate(startDate), formatDate(endDate));
-  }, []);
-
-  const handleSelect = (ranges) => {
-    setSelection([ranges.selection]);
-
-    console.log("Start Date:", ranges.selection.startDate);
-    console.log("End Date:", ranges.selection.endDate);
-  };
-
-  const handleFocusChange = (focusedRange) => {
-    // Calendar is closed only when both start and end dates are selected
-    if (focusedRange.startDate && focusedRange.endDate) {
-      setCalendarOpen(true);
-    }
-  };
-
-  const handleToggleCalendar = () => {
-    setCalendarOpen(!isCalendarOpen);
-  };
+    fetchData(formatDate(defaultStartDate), formatDate(defaultEndDate));
+  }, []); // Empty dependency array means this effect runs once after the initial render
 
   return (
     <div className="w-100 clearfix">
@@ -167,21 +129,17 @@ function App() {
             Select Date Range:
           </label>
           <br />
-          <div onClick={handleToggleCalendar}>
-            {/* Display selected date range */}
-            {selection[0].startDate.toLocaleDateString()} -{" "}
-            {selection[0].endDate
-              ? selection[0].endDate.toLocaleDateString()
-              : "Select end date"}
-          </div>
-
-          {isCalendarOpen && (
-            <DateRangePicker
-              ranges={selection}
-              onChange={handleSelect}
-              onFocusChange={handleFocusChange}
-            />
-          )}
+          <DatePicker
+            id="datePicker"
+            showIcon
+            selectsRange={true}
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(update) => {
+              setDateRange(update);
+            }}
+            shouldCloseOnSelect={true}
+          />
         </div>
 
         <div className="filter-set-2 w-25 p-2 float-start">
@@ -237,11 +195,7 @@ function App() {
             name="selectFilters"
             className="custom-button"
             onClick={() =>
-              fetchData(
-                formatDate(selection[0].startDate),
-                formatDate(selection[0].endDate),
-                true
-              )
+              fetchData(formatDate(startDate), formatDate(endDate), true)
             }
           >
             Select Filters
