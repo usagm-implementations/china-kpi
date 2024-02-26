@@ -116,8 +116,8 @@ function App() {
     // Calculate the start date for the last 7 days
     const startDate = new Date();
     const endDate = new Date();
-    startDate.setDate(startDate.getDate() - 3);
-    endDate.setDate(endDate.getDate() - 1);
+    startDate.setDate(startDate.getDate() - 7);
+    endDate.setDate(endDate.getDate() - 2);
     setSelection([
       {
         startDate: startDate,
