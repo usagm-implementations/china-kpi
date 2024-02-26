@@ -3246,6 +3246,11 @@ boolbase@^1.0.0, boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==
 
+bootstrap-icons@^1.11.3:
+  version "1.11.3"
+  resolved "https://registry.yarnpkg.com/bootstrap-icons/-/bootstrap-icons-1.11.3.tgz#03f9cb754ec005c52f9ee616e2e84a82cab3084b"
+  integrity sha512-+3lpHrCw/it2/7lBL15VR0HEumaBss0+f/Lb6ZvHISn1mlK83jjFpooTLsMWbIjJMDjDjOExMsTxnXSIT4k4ww==
+
 bootstrap@^5.3.2:
   version "5.3.3"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-5.3.3.tgz#de35e1a765c897ac940021900fcbb831602bac38"
@@ -10307,9 +10312,9 @@ yaml@^1.10.0, yaml@^1.10.2, yaml@^1.7.2:
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
 yaml@^2.3.4:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.3.4.tgz#53fc1d514be80aabf386dc6001eb29bf3b7523b2"
-  integrity sha512-8aAvwVUSHpfEqTQ4w/KMlf3HcRdt50E5ODIQJBw1fQ5RL34xabzxtUlzTXVqc4rkZsPbvrXKWnABCD7kWSmocA==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.4.0.tgz#2376db1083d157f4b3a452995803dbcf43b08140"
+  integrity sha512-j9iR8g+/t0lArF4V6NE/QCfT+CO7iLqrXAHZbJdo+LfjqP1vR8Fg5bSiaq6Q2lOD1AUEVrEVIgABvBFYojJVYQ==
 
 yargs-parser@^20.2.2:
   version "20.2.9"

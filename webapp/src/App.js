@@ -3,13 +3,11 @@ import "./App.css";
 import axios from "axios";
 import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-// import DatePicker from "react-datepicker";
 import MultiSelect from "react-select";
 import PieComponent from "./PieComponent";
 import StatsComponent from "./stats";
 import LeaderboardComponent from "./leaderboard";
 import KPIComponent from "./kpiComponent";
-// import "react-datepicker/dist/react-datepicker.css";
 
 import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css"; // main style file
@@ -167,12 +165,18 @@ function App() {
             Select Date Range:
           </label>
           <br />
-          <div onClick={handleToggleCalendar}>
-            {/* Display selected date range */}
-            {selection[0].startDate.toLocaleDateString()} -{" "}
-            {selection[0].endDate
-              ? selection[0].endDate.toLocaleDateString()
-              : "Select end date"}
+          <div
+            id="dtRange"
+            className="bg-light border border-1 border-secondary rounded"
+            onClick={handleToggleCalendar}
+          >
+            <span className="align-middle ms-2">
+              {/* Display selected date range */}
+              {selection[0].startDate.toLocaleDateString()} -{" "}
+              {selection[0].endDate
+                ? selection[0].endDate.toLocaleDateString()
+                : "Select end date"}
+            </span>
           </div>
 
           {isCalendarOpen && (
@@ -257,7 +261,7 @@ function App() {
         </div>
         <div className="stats mx-1 my-2 float-start flex-fill">
           {isDataFetched && (
-            <StatsComponent data={data} ed={formatDate(endDate)} />
+            <StatsComponent data={data} ed={formatDate(selection[0].endDate)} />
           )}
         </div>
       </div>

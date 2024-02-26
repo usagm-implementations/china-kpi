@@ -66,3 +66,22 @@ const DateRangePickerComponent = () => {
 };
 
 export default DateRangePickerComponent;
+
+useEffect(() => {
+  console.log(isInitialMount);
+  if (isInitialMount.current) {
+    isInitialMount.current = false;
+    return;
+  }
+  // Set default date range (past 2 days)
+  // const defaultEndDate = new Date();
+  // const defaultStartDate = new Date();
+  // defaultStartDate.setDate(defaultStartDate.getDate() - 3);
+  // defaultEndDate.setDate(defaultEndDate.getDate() - 1);
+
+  // Initialize dateRange state with the default values
+  // setDateRange([defaultStartDate, defaultEndDate]);
+
+  // Fetch data based on the default date range
+  // fetchData(formatDate(defaultStartDate), formatDate(defaultEndDate));
+}, []);

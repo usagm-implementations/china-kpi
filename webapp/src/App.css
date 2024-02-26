@@ -82,4 +82,9 @@
   font-weight: bolder;
 }
 
+#dtRange {
+  height: 44px !important;
+  /* vertical-align: -webkit-baseline-middle !important; */
+}
+
 
