@@ -46,21 +46,14 @@ RUN ./compile-protos.sh
 # Tidy go modules
 RUN go mod tidy
 
-# # Change directory to the source directory and run the Go server
-# WORKDIR /go/src/app/source
-# CMD ["go", "run", "main.go"]  # Start the Go server
-
 # Install Node.js and Yarn
 RUN apt-get install -y nodejs npm
 RUN npm install -g yarn
 
-# Start tmux with Go server and React application
-CMD ["tmux", "new-session", "-d", "./server \\; split-window -h 'cd /go/src/app/webapp && yarn install && yarn start'"]
+# Set up script to start both Go server and React application
+COPY startserver.sh .
+RUN chmod +x startserver.sh
 
+# Start both Go server and React application using the script
+CMD ["./startserver.sh"]
 
-# # Change directory to the webapp and install dependencies
-# WORKDIR /go/src/app/webapp
-# RUN yarn install
-
-# # Start the React application
-# CMD ["yarn", "start"]
