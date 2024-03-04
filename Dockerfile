@@ -1,5 +1,17 @@
-# Use an official Go runtime as a parent image
-FROM golang:latest
+# Use Ubuntu 22.04 LTS as a parent image
+FROM ubuntu:22.04
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    golang \
+    git \
+    protobuf-compiler \
+    nodejs \
+    npm
+
+# Set up environment variables
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 # Set the working directory inside the container
 WORKDIR /go/src/app
@@ -14,17 +26,6 @@ RUN go mod init github.com/usagm-implementations/china-kpi
 RUN go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go
 
-# Install protobuf tools
-RUN apt-get update && apt-get install -y protobuf-compiler
-
-# Install google.golang.org/protobuf
-RUN go get -u google.golang.org/protobuf
-
-# Set up environment variables
-RUN echo 'export GOPATH=~/go' >> ~/.bash_profile
-RUN echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.bash_profile
-RUN /bin/bash -c "source ~/.bash_profile"
-
 # Install grpc-gateway and protoc-gen-openapiv2
 RUN go install \
     github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest \
@@ -37,9 +38,6 @@ RUN chmod +x compile-protos.sh
 # Install protoc-gen-go-grpc from GitHub directly
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
-# Add the Go binary directory to the PATH
-ENV PATH="${PATH}:${GOPATH}/bin"
-
 # Run custom script for compiling protos
 RUN ./compile-protos.sh
 
@@ -47,12 +45,10 @@ RUN ./compile-protos.sh
 RUN go mod tidy
 
 # Install Node.js and Yarn
-RUN apt-get install -y nodejs npm
 RUN npm install -g yarn
 
 # Set up script to start both Go server and React application
-COPY startserver.sh .
-RUN chmod +x startserver.sh
+RUN chmod +x startServer.sh
 
 # Start both Go server and React application using the script
 CMD ["./startserver.sh"]
